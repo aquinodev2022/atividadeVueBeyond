@@ -1,36 +1,47 @@
 <template>
-  <v-container fluid fill-height style="background-image: linear-gradient(to top, #1e3c72 0%, #1e3c72 1%, #2a5298 100%);">
-    <v-row align="center" justify="center">
-      <v-col md="5">
-        <img src="@/assets/telaLogin.png" alt="Imagem de fundo" class="imagem-fundo">
-      </v-col>
-      
-      <v-col md="4" > 
-        <v-card class="elevation-8 cardLogin"> 
-          <v-toolbar dark color="primary">
-            <h1 class="flex-grow-1 text-center white--text">LOGIN</h1>
-          </v-toolbar>
-          <v-card-text>
-            <v-form @submit.prevent="login">
-              <v-text-field v-model="email" label="Email" type="email" required></v-text-field>
-              <v-text-field v-model="password" label="Senha" type="password" required></v-text-field>
-              
-              <div style="display: flex; justify-content: center; margin-top: 20px;">
-                <v-btn color="primary" type="submit" style="margin-right: 25px;">
-                  <v-icon left>mdi-login-variant</v-icon>
-                  Entrar
-                </v-btn>
-                <v-btn color="primary" @click="registrarUsuario">
-                  <v-icon left style="margin-right: 10px; padding-left: 10px;">mdi-account-plus-outline</v-icon>
-                  Cadastrar
-                </v-btn>
-              </div>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
+  <v-container fluid fill-height class="container-bg">
+    <div class="login-wrapper">
+      <div class="login-container">
+        <div class="login-image">
+          <img src="@/assets/imagemLogin.jpg" alt="Imagem de Login">
+        </div>
+        <div class="login-form">
+          <h2>Login</h2>
+          <v-form @submit.prevent="login">
+            <div class="input-group">
+              <v-text-field
+                v-model="email"
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Email"
+                required
+                hide-details
+                solo
+              ></v-text-field>
+            </div>
+            <div class="input-group">
+              <v-text-field
+                v-model="password"
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Senha"
+                required
+                hide-details
+                solo
+              ></v-text-field>
+            </div>
+            <v-btn type="submit" color="success" class="login-button">
+              Entrar
+            </v-btn>
+            <v-btn color="primary" @click="registrarUsuario" class="register-button">
+              Cadastrar
+            </v-btn>
+          </v-form>
+        </div>
+      </div>
+    </div>
   </v-container>
 </template>
 
@@ -46,6 +57,11 @@ const password = ref("");
 const registrarUsuario = async () => {
   if (!email.value || !password.value) {
     alert("Insira tanto o email quanto a senha para se cadastrar. Tente novamente!");
+    return;
+  }
+
+  if (password.value.length < 6) {
+    alert("A senha deve ter pelo menos 6 caracteres. Tente novamente!");
     return;
   }
 
@@ -70,30 +86,93 @@ const login = async () => {
 </script>
 
 <style scoped>
-.imagem-fundo {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.container-bg {
+  background-color: #e5e1e1;
+  display: flex;
+  justify-content: center;
+}
+
+.login-wrapper {
   width: 100%;
-  height: auto;
+  max-width: 900px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: -65px; /* Ajuste manual da posição vertical */
 }
 
-.calendario-btn {
-  position: absolute;
-  top: 90px; 
-  right: 30px; 
-  border-radius: 9px; 
-  background-color: #054478;
+
+.login-container {
+  display: flex;
 }
 
-.cardLogin {
-  border-radius: 12px;
-  background-color: #ffffff; 
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); 
+.login-image {
+  flex: 1;
 }
 
-.cardLogin .v-text-field { 
-  margin-bottom: 20px; 
+.login-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.cardLogin .v-btn { 
-  width: 135px; 
+.login-form {
+  flex: 1;
+  padding: 40px;
+  background-color: #0056b3; /* Cor de fundo para a metade direita */
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #ffffff;
+  text-align: center;
+  font-size: 2em;
+}
+
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.login-button {
+  width: 42%;
+  padding: 10px;
+  margin: 25px 15px ;
+  border: none;
+  border-radius: 4px;
+  background-color: #28a745;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background-color: #218838;
+}
+
+.register-button {
+  width: 42%;
+  padding: 10px;
+  margin: 25px 15px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.register-button:hover {
+  background-color: #0056b3;
 }
 </style>
