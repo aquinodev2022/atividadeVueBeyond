@@ -66,7 +66,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="red lighten-2" text @click="cancelAddEvent">Cancelar</v-btn>
-            <v-btn :carregando="carregando" color="primary" @click="saveEvent">Salvar</v-btn>
+            <v-btn :disabled="carregando" :carregando="carregando" color="primary" @click="saveEvent">Salvar</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -169,6 +169,9 @@
 </style>
 
 <script>
+import { collection, addDoc, getDocs, where, query   } from 'firebase/firestore';
+import { db, auth } from '../main';
+
 export default {
   name: 'CalendarioPrincipal',
 
@@ -201,10 +204,61 @@ export default {
       colors: ['pink', 'green', 'grey', 'cyan', 'blue', 'orange', 'red', 'purple','black'],
       valid: true, // Validação dos formulários
       carregando: false, // Estado de carregamento
+      isLoading: false // Estado de carregamento para Firestore
     };
   },
 
+  async mounted() {
+    await this.getEventsFromFirestore();
+  },
+
   methods: {
+    async addEventToFirestore(eventData) {
+      try {
+        // Adiciona o evento ao Firestore com o nome, data, cor e e-mail do usuário autenticado
+        const user = auth.currentUser;
+        if (user) {
+          await addDoc(collection(db, 'events'), {
+            name: eventData.name,
+            date: eventData.start,
+            color: eventData.color,
+            EmailUsuario: user.email // armazena o e-mail do usuário autenticado
+          });
+        } else {
+          throw new Error("Usuário não autenticado.");
+        }
+      } catch (error) {
+        console.error("Erro ao adicionar evento ao Firestore: ", error);
+      }
+    },
+
+    async fetchEventsFromFirestore() {
+      try {
+        // Recupera os eventos do Firestore pertencentes ao usuário autenticado
+        const user = auth.currentUser;
+        if (user) {
+          const q = query(collection(db, 'events'), where('EmailUsuario', '==', user.email));
+          const querySnapshot = await getDocs(q);
+          const events = [];
+          querySnapshot.forEach(doc => {
+            const eventData = {
+              name: doc.data().name,
+              date: doc.data().date,
+              color: doc.data().color,
+            };
+            events.push(eventData);
+          });
+          this.events = events;
+        } else {
+          throw new Error("Usuário não autenticado.");
+        }
+      } catch (error) {
+        console.error("Erro ao recuperar eventos do Firestore: ", error);
+      }
+    },
+
+  
+
     addEvent({ date }) {
       this.foco = date;
       this.novoEvento.date = date;
@@ -223,44 +277,58 @@ export default {
       this.novoEvento.color = '';
     },
 
-    saveEvent() {
-      if (this.$refs.form.validate()) { // verifica se o formulário é válido antes de prosseguir com alguma ação
-        this.carregando = true; // indica que uma determinada operação está em andamento
-
+    async saveEvent() {
+    if (this.$refs.form.validate()) {
+      this.carregando = true; // Desativa o botão "Salvar"
+      try {
         // Combine a data e a hora selecionadas 
         const start = new Date(this.novoEvento.date + 'T' + this.novoEvento.time);
 
         // Formata a hora do evento para exibir no título
-        const eventoHora = start.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        const eventoHora = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         // Cria o título do evento com a hora e o nome do evento
         const eventoNomeComHora = `${eventoHora} = ${this.novoEvento.name}`;
 
-        this.events.push({
+        const eventData = {
           name: eventoNomeComHora,
           start: start, // Usa a data e a hora definidas no formulário de adição de evento
           color: this.novoEvento.color,
-        });
+        };
+
+        // Adiciona o evento ao Firestore
+        await this.addEventToFirestore(eventData);
+
+        // Adiciona o evento à lista local
+        this.events.push(eventData);
 
         // Ordenar os eventos pelo horário de início
         this.events.sort((a, b) => a.start - b.start);
 
         // Feche o diálogo de adição de evento
         this.adicionarEventoDialogo = false;
-        this.carregando = false;
+      } catch (error) {
+        console.error("Erro ao adicionar evento: ", error);
+      } finally {
+        this.carregando = false; // Reativa o botão "Salvar"
       }
-    },
+    }
+  },
+
     pegarEventoCor(event) {
       return event.color;
     },
+    
     // Define a data de foco do calendário como hoje
     definirHoje() {
       this.foco = '';
     },
+    
     // Passa para o período anterior no calendário
     mesAnterior() {
       this.$refs.calendar.prev();
     },
+    
     // Passa para o próximo período no calendário
     proximoMes() {
       this.$refs.calendar.next();
@@ -304,7 +372,7 @@ export default {
 
     atualizarTítuloEventoComHora(event) {
       const comecarEvento = new Date(event.start); // objeto de data que representa o início do evento
-      return event.name.split(' = ')[1] || comecarEvento.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); // arante que sempre haja algum texto para retornar, mesmo que o título do evento esteja vazio
+      return event.name.split(' = ')[1] || comecarEvento.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); // garante que sempre haja algum texto para retornar, mesmo que o título do evento esteja vazio
     },
 
     // função é chamada quando alguém quer excluir um evento
@@ -342,7 +410,7 @@ export default {
         this.$nextTick(() => {
           // Atualiza os eventos exibidos no calendário com a lista atualizada de eventos.
           this.$refs.calendar.events = this.events;
-          // Redefini o v-model do calendário para a data de foco
+          // Redefinir o v-model do calendário para a data de foco
           this.$refs.calendar.foco = this.foco;
         });
         // fecha o diálogo de edição do evento
@@ -387,12 +455,15 @@ export default {
           name: this.names[this.rnd(0, this.names.length - 1)],
           start: first,
           end: second,
-          color: this.colors[this.rnd(0, this.colors.length - 1)],
-          timed: !todosDias,
-        });
-      }
-      this.events = events;
-    }
-  },
+          color: this.colors[this.rnd(
+0, this.colors.length - 1)],
+timed: !todosDias,
+});
+}
+this.events = events;
+}
+},
 };
 </script>
+
+

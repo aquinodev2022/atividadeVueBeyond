@@ -1,14 +1,17 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+
+// funções relacionadas à autenticação do Firebase
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 
+// Usando Vuex para gerenciamento de estado
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    user: null,
-    loading: false,
-    error: null
+    user: null, // Estado para armazenar informações do usuário autenticado
+    loading: false, // Estado para controlar o status de carregamento
+    error: null // Estado para armazenar mensagens de erro
   },
   mutations: {
     setUser(state, user) {
@@ -22,6 +25,7 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    // registra um novo usuário
     async register({ commit }, { email, password }) {
       const auth = getAuth();
       commit('setLoading', true);
@@ -35,6 +39,8 @@ export default new Vuex.Store({
         commit('setLoading', false);
       }
     },
+
+    // login de usuário
     async login({ commit }, { email, password }) {
       const auth = getAuth();
       commit('setLoading', true);
@@ -48,12 +54,14 @@ export default new Vuex.Store({
         commit('setLoading', false);
       }
     },
+
     async logout({ commit }) {
       const auth = getAuth();
       await signOut(auth);
       commit('setUser', null);
     },
-    // Ação checkAuth ajustada para retornar uma Promise
+
+    // verifica se o usuário está autenticado
     async checkAuth({ commit }) {
       const auth = getAuth();
       commit('setLoading', true);
@@ -66,10 +74,11 @@ export default new Vuex.Store({
       });
     }
   },
+
   getters: {
-    isAuthenticated: (state) => !!state.user,
-    getUser: (state) => state.user,
-    isLoading: (state) => state.loading,
-    getError: (state) => state.error
+    isAuthenticated: (state) => !!state.user, // verifica se o usuário está autenticado
+    getUser: (state) => state.user, // informações do usuário
+    isLoading: (state) => state.loading, // status de carregamento
+    getError: (state) => state.error //  mensagens de erro
   }
 });
