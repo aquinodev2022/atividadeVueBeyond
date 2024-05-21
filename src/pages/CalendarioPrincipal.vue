@@ -45,82 +45,88 @@
       ></v-calendar>
 
       <!-- Formulário de adição de evento -->
-      <v-dialog v-model="adicionarEventoDialogo" max-width="500px">
-        <v-card>
-          <v-card-title>Adicionar Evento</v-card-title>
-          <v-card-text>
-            <v-form ref="form">
-                                                    <!-- validação para garantir que o campo seja preenchido -->
-              <v-text-field v-model="novoEvento.name" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Nome do evento"></v-text-field>
-                                                                 <!-- validação para garantir que o campo seja preenchido -->
-              <v-select v-model="novoEvento.color" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
-              <!-- Rótulo para o relógio -->
-              <label for="timePicker" id="fraseAntesDoRelogio">Hora do Evento</label>
-              <!-- Container para envolver o relógio -->
-              <div id="timePicker" class="containerRelogio">                            <!-- validação para garantir que o campo seja preenchido -->
-                <v-time-picker id="relogioEstilo" v-model="novoEvento.time" format="24hr" :rules="[v => !!v || 'Hora é obrigatória']"></v-time-picker>
-              </div>
-            </v-form>
-          </v-card-text>
+<v-dialog v-model="adicionarEventoDialogo" max-width="500px" persistent>
+  <v-card>
+    <v-card-title>Adicionar Evento</v-card-title>
+    <v-card-text>
+      <v-form ref="form">
+        <!-- validação para garantir que o campo seja preenchido -->
+        <v-text-field v-model="novoEvento.name" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Nome do evento"></v-text-field>
+        <!-- validação para garantir que o campo seja preenchido -->
+        <v-select v-model="novoEvento.color" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
+        <!-- Rótulo para o relógio -->
+        <label for="timePicker" id="fraseAntesDoRelogio">Hora do Evento</label>
+        <!-- Container para envolver o relógio -->
+        <div id="timePicker" class="containerRelogio">
+          <!-- validação para garantir que o campo seja preenchido -->
+          <v-time-picker id="relogioEstilo" v-model="novoEvento.time" format="24hr" :rules="[v => !!v || 'Hora é obrigatória']"></v-time-picker>
+        </div>
+      </v-form>
+    </v-card-text>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red lighten-2" text @click="cancelAddEvent">Cancelar</v-btn>
-            <v-btn :disabled="carregando" :carregando="carregando" color="primary" @click="saveEvent">Salvar</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="red lighten-2" text @click="cancelAddEvent">Cancelar</v-btn>
+      <v-btn :disabled="carregando" :carregando="carregando" color="primary" @click="saveEvent">Salvar</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
 
       <!-- Formulário de edição de evento -->
-      <v-dialog v-model="editarEventoDialogo" max-width="500px">
-        <v-card>
-          <v-card-title>Editar Evento</v-card-title>
-          <v-card-text>
-            <v-form ref="form">
-              <!-- Campo de título do evento -->     <!-- validação para garantir que o campo seja preenchido -->
-              <v-text-field v-model="editarEvento.name" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Evento"></v-text-field>
+<v-dialog v-model="editarEventoDialogo" max-width="500px" persistent>
+  <v-card>
+    <v-card-title>Editar Evento</v-card-title>
+    <v-card-text>
+      <v-form ref="form">
+        <!-- Campo de título do evento -->     
+        <!-- validação para garantir que o campo seja preenchido -->
+        <v-text-field v-model="editarEvento.name" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Evento"></v-text-field>
 
-              <!-- Campo de seleção de hora e minutos do evento -->
-              <div class="d-flex justify-space-between">
-                <div>
-                  <!-- Label para o select de hora -->
-                  <label for="editarEventoohora">Alteração da hora:</label>
-                  <v-select id="editarEventoohora" v-model="editarEventoohora" :items="hours" label="Hora" @change="updateEventTitleWithTime"></v-select>
-                </div>
-                <div>
-                  <!-- Label para o select de minutos -->
-                  <label for="editarEventohora">Alteração dos minutos:</label>
-                  <v-select id="editarEventohora" v-model="editarEventohora" :items="minutes" label="Minutos" @change="updateEventTitleWithTime"></v-select>
-                </div>
-              </div>
+        <!-- Campo de seleção de hora e minutos do evento -->
+        <div class="d-flex justify-space-between">
+          <div>
+            <!-- Label para o select de hora -->
+            <label for="editarEventoohora">Alteração da hora:</label>
+            <v-select id="editarEventoohora" v-model="editarEventoohora" :items="hours" label="Hora" @change="updateEventTitleWithTime"></v-select>
+          </div>
+          <div>
+            <!-- Label para o select de minutos -->
+            <label for="editarEventohora">Alteração dos minutos:</label>
+            <v-select id="editarEventohora" v-model="editarEventohora" :items="minutes" label="Minutos" @change="updateEventTitleWithTime"></v-select>
+          </div>
+        </div>
 
-              <!-- Campo de seleção de cor do evento -->          <!-- validação para garantir que o campo seja preenchido -->
-              <v-select v-model="editarEvento.color" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
-              <v-btn color="red" @click="abrirDeletarDialogo(editarEventoIndice)">Excluir Evento</v-btn>
-            </v-form>
-          </v-card-text>
+        <!-- Campo de seleção de cor do evento -->
+        <!-- validação para garantir que o campo seja preenchido -->
+        <v-select v-model="editarEvento.color" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
+        <v-btn color="red" @click="abrirDeletarDialogo(editarEventoIndice)">Excluir Evento</v-btn>
+      </v-form>
+    </v-card-text>
 
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red lighten-2" text @click="cancelarEditarEvento">Cancelar</v-btn>
-            <v-btn :carregando="carregando" color="primary" @click="savarEditarEvento">Salvar</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="red lighten-2" text @click="cancelarEditarEvento">Cancelar</v-btn>
+      <v-btn :carregando="carregando" color="primary" @click="savarEditarEvento">Salvar</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
 
       <!-- Pop-up de confirmação de exclusão do evento -->
-      <v-dialog v-model="deletarEventoDialogo" max-width="500px">
-        <v-card>
-          <v-card-title>Confirmar exclusão</v-card-title>
-          <v-card-text id="fraseExclusao">
-            Tem certeza de que deseja excluir este evento?
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="red lighten-2" text @click="cancelarDeletarEvento">Cancelar</v-btn>
-            <v-btn color="red" @click="confirmarDeletarEvento">Excluir</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+<v-dialog v-model="deletarEventoDialogo" max-width="500px" persistent>
+  <v-card>
+    <v-card-title>Confirmar exclusão</v-card-title>
+    <v-card-text id="fraseExclusao">
+      Tem certeza de que deseja excluir este evento?
+    </v-card-text>
+    <v-card-actions>
+      <v-btn color="red lighten-2" text @click="cancelarDeletarEvento">Cancelar</v-btn>
+      <v-btn color="red" @click="confirmarDeletarEvento">Excluir</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
     </v-sheet>
   </v-main>
 </template>
@@ -172,6 +178,7 @@
 import { collection, addDoc, getDocs, where, query   } from 'firebase/firestore';
 import { db, auth } from '../main';
 
+
 export default {
   name: 'CalendarioPrincipal',
 
@@ -215,14 +222,13 @@ export default {
   methods: {
     async addEventToFirestore(eventData) {
       try {
-        // Adiciona o evento ao Firestore com o nome, data, cor e e-mail do usuário autenticado
         const user = auth.currentUser;
         if (user) {
           await addDoc(collection(db, 'events'), {
-            name: eventData.name,
+            name: eventData.originalName,
             date: eventData.start,
             color: eventData.color,
-            EmailUsuario: user.email // armazena o e-mail do usuário autenticado
+            EmailUsuario: user.email
           });
         } else {
           throw new Error("Usuário não autenticado.");
@@ -232,9 +238,8 @@ export default {
       }
     },
 
-    async fetchEventsFromFirestore() {
+async fetchEventsFromFirestore() {
       try {
-        // Recupera os eventos do Firestore pertencentes ao usuário autenticado
         const user = auth.currentUser;
         if (user) {
           const q = query(collection(db, 'events'), where('EmailUsuario', '==', user.email));
@@ -243,7 +248,7 @@ export default {
           querySnapshot.forEach(doc => {
             const eventData = {
               name: doc.data().name,
-              date: doc.data().date,
+              date: doc.data().date.toDate(), // Convertendo para objeto de data
               color: doc.data().color,
             };
             events.push(eventData);
@@ -256,8 +261,6 @@ export default {
         console.error("Erro ao recuperar eventos do Firestore: ", error);
       }
     },
-
-  
 
     addEvent({ date }) {
       this.foco = date;
@@ -278,42 +281,43 @@ export default {
     },
 
     async saveEvent() {
-    if (this.$refs.form.validate()) {
-      this.carregando = true; // Desativa o botão "Salvar"
-      try {
-        // Combine a data e a hora selecionadas 
-        const start = new Date(this.novoEvento.date + 'T' + this.novoEvento.time);
+  if (this.$refs.form.validate()) {
+    this.carregando = true; // Desativa o botão "Salvar"
+    try {
+      // Combine a data e a hora selecionadas 
+      const start = new Date(this.novoEvento.date + 'T' + this.novoEvento.time);
 
-        // Formata a hora do evento para exibir no título
-        const eventoHora = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      // Formata a hora do evento para exibir no título
+      const eventoHora = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        // Cria o título do evento com a hora e o nome do evento
-        const eventoNomeComHora = `${eventoHora} = ${this.novoEvento.name}`;
+      // Cria o título do evento com a hora e o nome do evento
+      const eventoNomeComHora = `${eventoHora} = ${this.novoEvento.name}`;
 
-        const eventData = {
-          name: eventoNomeComHora,
-          start: start, // Usa a data e a hora definidas no formulário de adição de evento
-          color: this.novoEvento.color,
-        };
+      const eventData = {
+        originalName: this.novoEvento.name, // Guarda o nome original sem a hora
+        name: eventoNomeComHora, // Nome para exibição no calendário
+        start: start, // Usa a data e a hora definidas no formulário de adição de evento
+        color: this.novoEvento.color,
+      };
 
-        // Adiciona o evento ao Firestore
-        await this.addEventToFirestore(eventData);
+      // Adiciona o evento ao Firestore
+      await this.addEventToFirestore(eventData);
 
-        // Adiciona o evento à lista local
-        this.events.push(eventData);
+      // Adiciona o evento à lista local
+      this.events.push(eventData);
 
-        // Ordenar os eventos pelo horário de início
-        this.events.sort((a, b) => a.start - b.start);
+      // Ordenar os eventos pelo horário de início
+      this.events.sort((a, b) => a.start - b.start);
 
-        // Feche o diálogo de adição de evento
-        this.adicionarEventoDialogo = false;
-      } catch (error) {
-        console.error("Erro ao adicionar evento: ", error);
-      } finally {
-        this.carregando = false; // Reativa o botão "Salvar"
-      }
+      // Feche o diálogo de adição de evento
+      this.adicionarEventoDialogo = false;
+    } catch (error) {
+      console.error("Erro ao adicionar evento: ", error);
+    } finally {
+      this.carregando = false; // Reativa o botão "Salvar"
     }
-  },
+  }
+},
 
     pegarEventoCor(event) {
       return event.color;
