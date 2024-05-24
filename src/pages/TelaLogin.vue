@@ -79,6 +79,8 @@ const login = async () => {
     await signInWithEmailAndPassword(auth, email.value, password.value);
     alert("Login realizado com sucesso!");
     router.push("/Calendario");
+
+   
   } catch (error) {
     alert("Email e senha inválidos. Tente novamente!");
   }

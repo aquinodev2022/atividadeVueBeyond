@@ -6,7 +6,7 @@
     </router-link>
     <v-spacer></v-spacer>
     <!-- É só representando, nada funcional ainda -->
-    <v-icon aria-label="Ícone que representa as configurações" id="iconeConfiguracoes">mdi-cog</v-icon>
+    <!-- <v-icon aria-label="Ícone que representa as configurações" id="iconeConfiguracoes">mdi-cog</v-icon> -->
   </v-app-bar>
 </template>
 
