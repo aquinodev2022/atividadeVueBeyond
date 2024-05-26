@@ -4,6 +4,7 @@ import store from '../store/store.js';
 import TelaLogin from '../pages/TelaLogin.vue';
 import CalendarioPrincipal from '../pages/CalendarioPrincipal.vue'; 
 import PaginaNaoEncontrada from '../components/PaginaNaoEncontrada.vue'
+import RedefinirSenha from '../pages/RedefinirSenha.vue'
 
 Vue.use(VueRouter);
 
@@ -29,6 +30,11 @@ const routes = [
     component: TelaLogin
   },
   
+ {
+  path: "/RedefinirSenha",
+  component: RedefinirSenha,
+ },
+
   {
     path: '/Calendario',
     component: CalendarioPrincipal,

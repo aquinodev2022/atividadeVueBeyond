@@ -38,6 +38,9 @@
             <v-btn color="primary" @click="registrarUsuario" class="register-button">
               Cadastrar
             </v-btn>
+            <a href="#" @click.prevent="navegarParaRedefinirSenha" class="forgot-password-link">
+              Esqueceu a Senha?
+            </a>
           </v-form>
         </div>
       </div>
@@ -79,12 +82,15 @@ const login = async () => {
     await signInWithEmailAndPassword(auth, email.value, password.value);
     alert("Login realizado com sucesso!");
     router.push("/Calendario");
-
-   
   } catch (error) {
     alert("Email e senha inválidos. Tente novamente!");
   }
 };
+
+const navegarParaRedefinirSenha = () => {
+  router.push("/RedefinirSenha");
+};
+
 </script>
 
 <style scoped>
@@ -110,9 +116,8 @@ const login = async () => {
   overflow: hidden;
   margin-left: auto;
   margin-right: auto;
-  margin-top: -65px; /* Ajuste manual da posição vertical */
+  margin-bottom: 156px; 
 }
-
 
 .login-container {
   display: flex;
@@ -131,7 +136,7 @@ const login = async () => {
 .login-form {
   flex: 1;
   padding: 40px;
-  background-color: #0056b3; /* Cor de fundo para a metade direita */
+  background-color: #0056b3; 
 }
 
 h2 {
@@ -177,4 +182,13 @@ h2 {
 .register-button:hover {
   background-color: #0056b3;
 }
+
+.forgot-password-link {
+  display: block;
+  margin: 10px 0;
+  color: white;
+  text-align: center;
+  cursor: pointer;
+}
+
 </style>

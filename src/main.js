@@ -19,11 +19,10 @@ const firebaseConfiguracoes = {
   measurementId: "G-4XJZJW0MCS"
 };
 
-
 const app = initializeApp(firebaseConfiguracoes);
 const db = getFirestore(app);
 
-export { db }; // TALVEZ NAO SEJA NECESSARIO
+export { db }; 
 
 // Obtendo o objeto de autenticação do Firebase
 export const auth = getAuth();

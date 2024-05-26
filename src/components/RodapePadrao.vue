@@ -25,13 +25,13 @@ export default {
   data: () => ({
     icons: [
       'mdi-github',
-      'mdi-email-outline',
+      'mdi-whatsapp',
       'mdi-linkedin',
       'mdi-instagram',
     ],
     links: {
       'mdi-github': 'https://github.com/aquinodev2022',
-      'mdi-email-outline': 'mailto:offlinematheus@gmail.com',
+      'mdi-whatsapp': 'https://api.whatsapp.com/send/?phone=5581997855713&text&type=phone_number&app_absent=0',
       'mdi-linkedin': 'https://www.linkedin.com/in/matheus-aquino-dos-santos-dev/',
       'mdi-instagram': 'https://www.instagram.com/matheus_aquino2k24/',
     },

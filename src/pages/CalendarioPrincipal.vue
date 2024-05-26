@@ -44,7 +44,7 @@
       >
       <template v-slot:event="{ event }">
   <div class="evento">
-    <div>{{ String(event.start.getHours()).padStart(2, '0') }}:{{ String(event.start.getMinutes()).padStart(2, '0') }} - {{ event.name }}</div>
+    <div>{{ String(event.start.getHours()).padStart(2, '0') }}:{{ String(event.start.getMinutes()).padStart(2, '0') }} - {{ event.nomeEvento }}</div>
   </div>
 </template>
 
@@ -57,9 +57,9 @@
           <v-card-text>
             <v-form ref="form">
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-text-field v-model="novoEvento.name" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Nome do evento"></v-text-field>
+              <v-text-field v-model="novoEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Nome do evento"></v-text-field>
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-select v-model="novoEvento.color" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
+              <v-select v-model="novoEvento.corEvento" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
               <!-- Rótulo para o relógio -->
               <label for="timePicker" id="fraseAntesDoRelogio">Hora do Evento</label>
               <!-- Container para envolver o relógio -->
@@ -85,7 +85,7 @@
             <v-form ref="form">
               <!-- Campo de título do evento -->     
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-text-field v-model="editarEvento.name" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Evento"></v-text-field>
+              <v-text-field v-model="editarEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Evento"></v-text-field>
               <!-- Campo de seleção de hora e minutos do evento -->
               <div class="d-flex justify-space-between">
                 <div>
@@ -101,7 +101,7 @@
               </div>
               <!-- Campo de seleção de cor do evento -->
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-select v-model="editarEvento.color" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
+              <v-select v-model="editarEvento.corEvento" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
               <v-btn color="red" @click="abrirDeletarDialogo(editarEventoIndice)">Excluir Evento</v-btn>
             </v-form>
           </v-card-text>
@@ -189,18 +189,18 @@ export default {
       foco: '', // Data de foco do calendário, ou seja, nenhuma
       tituloCalendario: '',
       novoEvento: {
-        name: '',
+        nomeEvento: '',
         date: '',
         time: '',
-        color: '',
+        corEvento: '',
       },
       editarEventoDialogo: false, // Controle de exibição do diálogo de edição do evento
       editarEventoIndice: -1,
       editarEvento: {
-        name: '',
+        nomeEvento: '',
         date: '',
         time: '',
-        color: '',
+        corEvento: '',
       },
       deletarEventoDialogo: false, // Controle de exibição do diálogo de exclusão do evento
       deletarEventoIndice: -1,
@@ -220,15 +220,15 @@ export default {
     },
 
     pegarEventoCor(event) {
-      return event.color;
+      return event.corEvento;
     },
 
     async addEvent({ date }) {
       this.novoEvento = {
-        name: '',
+        nomeEvento: '',
         date: date,
         time: '',
-        color: ''
+        corEvento: ''
       };
       this.adicionarEventoDialogo = true;
     },
@@ -246,11 +246,10 @@ export default {
         const localDateTime = new Date(this.novoEvento.date + 'T' + this.novoEvento.time);
 
         const event = {
-          name: this.novoEvento.name,
+          nomeEvento: this.novoEvento.nomeEvento,
           start: localDateTime, // Salve como hora local
-          end: localDateTime,
-          color: this.novoEvento.color,
-          userId: email // Atribui o email como userID
+          corEvento: this.novoEvento.corEvento,
+          EmailUsuario: email // Atribui o email como EmailUsuario
         };
 
         const docRef = await addDoc(collection(db, 'events'), event);
@@ -264,12 +263,8 @@ export default {
       }
     },
 
-    // Falta firestore
-    // Código quase pronto
-
     mostrarEvento({ event }) {
-      // Faz uma cópia profunda do evento para evitar referências compartilhadas
-      this.editarEvento = JSON.parse(JSON.stringify(event));
+      this.editarEvento = { ...event };  // Copia o evento preservando o ID
       const eventDate = new Date(event.start);
       this.editarEventoohora = String(eventDate.getHours()).padStart(2, '0');
       this.editarEventohora = String(eventDate.getMinutes()).padStart(2, '0');
@@ -279,29 +274,24 @@ export default {
     async savarEditarEvento() {
       this.carregando = true;
       try {
-        // Cria uma cópia profunda do evento editado para evitar referências compartilhadas
-        const updatedEvent = JSON.parse(JSON.stringify(this.editarEvento));
-
-        // Atualiza a hora e os minutos do evento com os valores do formulário
+        const updatedEvent = { ...this.editarEvento };
         const localDateTime = new Date(updatedEvent.start);
         localDateTime.setHours(parseInt(this.editarEventoohora));
         localDateTime.setMinutes(parseInt(this.editarEventohora));
-
-        // Atualiza o evento com a hora e os minutos atualizados
         updatedEvent.start = localDateTime;
-        updatedEvent.end = localDateTime;
 
-        // Procura o evento correspondente na lista de eventos e atualiza-o
-        const index = this.events.findIndex(event => event.id === updatedEvent.id);
+        // Remove os campos id e time do objeto antes de enviar ao Firestore
+        delete updatedEvent.id;
+        delete updatedEvent.time;
+
+        const index = this.events.findIndex(event => event.id === this.editarEvento.id);
         if (index !== -1) {
-          this.events.splice(index, 1, updatedEvent);
+          this.events.splice(index, 1, { ...updatedEvent, id: this.editarEvento.id });
         }
 
-        // Atualiza o evento no Firestore
-        const eventDoc = doc(db, 'events', updatedEvent.id);
+        const eventDoc = doc(db, 'events', this.editarEvento.id);
         await updateDoc(eventDoc, updatedEvent);
 
-        // Fecha o diálogo de edição
         this.editarEventoDialogo = false;
       } catch (e) {
         console.error("Erro ao editar o evento: ", e);
@@ -316,6 +306,14 @@ export default {
 
     cancelarEditarEvento() {
       this.editarEventoDialogo = false;
+      this.editarEvento = {
+        nomeEvento: '',
+        date: '',
+        time: '',
+        corEvento: ''
+      };
+      this.editarEventoohora = '';
+      this.editarEventohora = '';
     },
 
     async confirmarDeletarEvento() {
@@ -343,16 +341,13 @@ export default {
         const email = user ? user.email : null;
 
         if (email) {
-          const q = query(collection(db, 'events'), where('userId', '==', email)); // Filtra por email do usuário
+          const q = query(collection(db, 'events'), where('EmailUsuario', '==', email));
           const querySnapshot = await getDocs(q);
 
           this.events = querySnapshot.docs.map(doc => {
             const data = doc.data();
             data.id = doc.id;
-
-            // Não há necessidade de converter UTC para local, já que salvamos em hora local
             data.start = data.start.toDate();
-            data.end = data.end.toDate();
 
             return data;
           });
@@ -376,19 +371,17 @@ export default {
 
     cancelAddEvent() {
       this.adicionarEventoDialogo = false;
-      // Limpar os campos do formulário, se necessário
       this.novoEvento = {
         name: '',
         date: '',
         time: '',
-        color: ''
+        corEvento: ''
       };
     },
 
     atualizarIntervalo({ start, end }) {
       this.tituloCalendario = this.$refs.calendar.title;
       const events = [];
-      // Define o início do dia como a data mínima e o final do dia como a data máxima
       const min = new Date(start.date + 'T00:00:00');
       const max = new Date(end.date + 'T23:59:59');
       const dias = (max.getTime() - min.getTime()) / 86400000;
@@ -400,10 +393,10 @@ export default {
         const secondTimestamp = this.rnd(2, todosDias ? 288 : 8) * 900000;
         const second = new Date(first.getTime() + secondTimestamp);
         events.push({
-          name: this.names[this.rnd(0, this.names.length - 1)],
+          nomeEvento: this.names[this.rnd(0, this.names.length - 1)],
           start: first,
           end: second,
-          color: this.colors[this.rnd(0, this.colors.length - 1)],
+          corEvento: this.colors[this.rnd(0, this.colors.length - 1)],
           timed: !todosDias,
         });
       }
@@ -415,5 +408,4 @@ export default {
     await this.fetchEventsFromFirestore();
   }
 };
-
 </script>
