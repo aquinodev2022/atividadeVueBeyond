@@ -4,9 +4,10 @@
       <!-- Menu com a opção "HOJE" e seleção de dias/semanas/meses/ e tipo de visualização do calendário -->
       <!-- Botão Hoje -->
       <v-btn id="botaoHoje" class="mr-4" @click="definirHoje">
+        <v-icon id="iconeBotaoHoje">mdi-calendar-today</v-icon>
         Hoje
       </v-btn>
-      
+
       <!-- Seta para esquerda para voltar ao dia/semana/mês anterior -->
       <v-btn text small color="white darken-2" @click="mesAnterior">
         <v-icon>mdi-arrow-left-thick</v-icon>
@@ -21,34 +22,20 @@
       <v-toolbar-title v-if="tituloCalendario" style="overflow: visible; color: white;">
         {{ tituloCalendario }}
       </v-toolbar-title>
-
-      <router-link to="/" class="alinharVoltarLogin botaoVoltarLogin">
-      <v-btn text color="white">
-        <v-icon left style="color: white;">mdi-login</v-icon>
-        Voltar para tela de login
-      </v-btn>
-    </router-link>
     </v-toolbar>
 
     <!-- Calendário -->
     <v-sheet id="calendarioEstilos">
-      <v-calendar
-        ref="calendar"
-        v-model="foco"
-        color="primary"
-        :events="events"
-        :event-color="pegarEventoCor"
-        @click:event="mostrarEvento"
-        @click:date="addEvent"
-        @change="atualizarIntervalo"
-      >
-      <template v-slot:event="{ event }">
-  <div class="evento">
-    <div>{{ String(event.start.getHours()).padStart(2, '0') }}:{{ String(event.start.getMinutes()).padStart(2, '0') }} - {{ event.nomeEvento }}</div>
-  </div>
-</template>
+      <v-calendar ref="calendar" v-model="foco" color="primary" :events="events" :event-color="pegarEventoCor"
+        @click:event="mostrarEvento" @click:date="addEvent" @change="atualizarIntervalo">
+        <template v-slot:event="{ event }">
+          <div class="evento">
+            <div>{{ String(event.start.getHours()).padStart(2, '0') }}:{{ String(event.start.getMinutes()).padStart(2,
+              '0') }} - {{ event.nomeEvento }}</div>
+          </div>
+        </template>
 
-</v-calendar>
+      </v-calendar>
 
       <!-- Formulário de adição de evento -->
       <v-dialog v-model="adicionarEventoDialogo" max-width="500px" persistent>
@@ -57,15 +44,18 @@
           <v-card-text>
             <v-form ref="form">
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-text-field v-model="novoEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Nome do evento"></v-text-field>
+              <v-text-field v-model="novoEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']"
+                label="Nome do evento"></v-text-field>
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-select v-model="novoEvento.corEvento" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
+              <v-select v-model="novoEvento.corEvento" :items="translatedColors"
+                :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
               <!-- Rótulo para o relógio -->
               <label for="timePicker" id="fraseAntesDoRelogio">Hora do Evento</label>
               <!-- Container para envolver o relógio -->
               <div id="timePicker" class="containerRelogio">
                 <!-- validação para garantir que o campo seja preenchido -->
-                <v-time-picker id="relogioEstilo" v-model="novoEvento.time" format="24hr" :rules="[v => !!v || 'Hora é obrigatória']"></v-time-picker>
+                <v-time-picker id="relogioEstilo" v-model="novoEvento.time" format="24hr"
+                  :rules="[v => !!v || 'Hora é obrigatória']"></v-time-picker>
               </div>
             </v-form>
           </v-card-text>
@@ -78,98 +68,153 @@
       </v-dialog>
 
       <!-- Formulário de edição de evento -->
-      <v-dialog v-model="editarEventoDialogo" max-width="500px" persistent>
-        <v-card>
+      <v-dialog v-model="editarEventoDialogo" width="500px" persistent>
+        <v-card id="cardEditarEventos">
           <v-card-title>Editar Evento</v-card-title>
           <v-card-text>
             <v-form ref="form">
-              <!-- Campo de título do evento -->     
+              <!-- Campo de título do evento -->
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-text-field v-model="editarEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']" label="Evento"></v-text-field>
+              <v-text-field v-model="editarEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']"
+                label="Nome do evento"></v-text-field>
               <!-- Campo de seleção de hora e minutos do evento -->
               <div class="d-flex justify-space-between">
                 <div>
                   <!-- Label para o select de hora -->
-                  <label for="editarEventoohora">Alteração da hora:</label>
-                  <v-select id="editarEventoohora" v-model="editarEventoohora" :items="hours" label="Hora" @change="updateEventTitleWithTime"></v-select>
+                  <v-select id="editarEventoohora" v-model="editarEventoohora" :items="hours" label="Hora"
+                    @change="updateEventTitleWithTime"></v-select>
                 </div>
                 <div>
                   <!-- Label para o select de minutos -->
-                  <label for="editarEventohora">Alteração dos minutos:</label>
-                  <v-select id="editarEventohora" v-model="editarEventohora" :items="minutes" label="Minutos" @change="updateEventTitleWithTime"></v-select>
+                  <v-select id="editarEventohora" v-model="editarEventohora" :items="minutes" label="Minutos"
+                    @change="updateEventTitleWithTime"></v-select>
                 </div>
               </div>
               <!-- Campo de seleção de cor do evento -->
               <!-- validação para garantir que o campo seja preenchido -->
-              <v-select v-model="editarEvento.corEvento" :items="colors" :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
-              <v-btn color="red" @click="abrirDeletarDialogo(editarEventoIndice)">Excluir Evento</v-btn>
+              <v-select v-model="editarEvento.corEvento" :items="translatedColors"
+                :rules="[v => !!v || 'Cor do Evento é obrigatório']" label="Cor do Evento"></v-select>
+              <v-btn id="botaoExcluirEvento" color="red" @click="abrirDeletarDialogo(editarEventoIndice)">
+                <v-icon>mdi-delete</v-icon>
+                Excluir Evento
+              </v-btn>
             </v-form>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="red lighten-2" text @click="cancelarEditarEvento">Cancelar</v-btn>
-            <v-btn :loading="carregando" color="primary" @click="savarEditarEvento">Salvar</v-btn>
+            <v-btn id="botaoCancelarEditarEvento" color="grey" @click="cancelarEditarEvento">
+              <v-icon>mdi-cancel</v-icon>
+              Cancelar
+            </v-btn>
+            <v-btn id="botaoSalvarALteracoesEvento" :loading="carregando" color="primary" @click="savarEditarEvento">
+              <v-icon id="iconeSalvarALteracoesEvento">mdi-content-save</v-icon>
+              <span id="palavraSalvar">Salvar</span>
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
 
       <!-- Pop-up de confirmação de exclusão do evento -->
-<v-dialog v-model="deletarEventoDialogo" max-width="500px" persistent>
-  <v-card>
-    <v-card-title>Confirmar exclusão</v-card-title>
-    <v-card-text id="fraseExclusao">
-      Tem certeza de que deseja excluir este evento?
-    </v-card-text>
-    <v-card-actions>
-      <v-btn color="red lighten-2" text @click="cancelarDeletarEvento">Cancelar</v-btn>
-      <v-btn color="red" @click="confirmarDeletarEvento">Excluir</v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-
+      <v-dialog v-model="deletarEventoDialogo" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Confirmar exclusão</v-card-title>
+          <v-card-text id="fraseExclusao">
+            Tem certeza de que deseja excluir este evento?
+          </v-card-text>
+          <v-card-actions id="cardConfirmarExclusao">
+            <v-btn color="grey" id="botaoCancelarExclusao" @click="cancelarDeletarEvento">Cancelar</v-btn>
+            <v-btn color="red" id="botaoConfirmarExclusao" @click="confirmarDeletarEvento">
+              <v-icon>mdi-delete</v-icon>
+              Excluir
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-sheet>
   </v-main>
 </template>
 
 <style scoped>
-  #botaoHoje {
-    border-radius: 10px;
-    background-color: #E8F1F2;
-  }
 
-  .botaoVoltarLogin {
-    margin-left: 69%;
-    border-radius: 9px;
-    background-color: #054478;
-  }
+#botaoHoje {
+  border-radius: 10px;
+  background-color: #E8F1F2;
+}
 
-  .alinharVoltarLogin {
-    text-decoration: none;
-  }
+#iconeBotaoHoje {
+  margin-right: 7px;
+}
 
-  #calendarioEstilos {
-    margin-top: 10px;  
-    height: 705px;
-  }
+#cardEditarEventos {
+  height: 35vh;
+}
 
-  #fraseAntesDoRelogio {
-    font-size: 18px;
-    display: block;
-    text-align: center;
-    width: 100%;
-  }
+#botaoCancelarEditarEvento {
+  position: absolute;
+  left: 4%;
+  bottom: 8%;
+}
 
-  .containerRelogio {
-    margin-top: 20px; 
-  }
+#botaoExcluirEvento {
+  position: absolute;
+  bottom: 8%;
+  left: 16vh;
+}
 
-  #relogioEstilo{
-    width: 450px; 
-  }
+#botaoSalvarALteracoesEvento {
+  position: absolute;
+  bottom: 8%;
+  right: 9%;
+}
 
-  #fraseExclusao {
-    font-size: 20px;
-  }
+#iconeSalvarALteracoesEvento {
+  color: black;
+}
+
+#palavraSalvar {
+  color: black;
+}
+
+#calendarioEstilos {
+  margin-top: 10px;
+  height: 725px;
+}
+
+#fraseAntesDoRelogio {
+  font-size: 18px;
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.containerRelogio {
+  margin-top: 20px;
+}
+
+#relogioEstilo {
+  width: 450px;
+}
+
+#fraseExclusao {
+  font-size: 20px;
+}
+
+#cardConfirmarExclusao {
+  height: 5vh;
+}
+
+#botaoCancelarExclusao {
+  position: absolute;
+  left: 5%;
+  margin-bottom: 20px;
+}
+
+#botaoConfirmarExclusao {
+  position: relative;
+  left: 26%;
+  margin-bottom: 20px;
+}
+
 </style>
 
 <script>
@@ -177,7 +222,6 @@ import { updateDoc, collection, addDoc, getDocs, where, query, doc, deleteDoc } 
 import { db, auth } from '../main';
 
 export default {
-  name: 'CalendarioPrincipal',
 
   data() {
     return {
@@ -205,12 +249,35 @@ export default {
       deletarEventoDialogo: false, // Controle de exibição do diálogo de exclusão do evento
       deletarEventoIndice: -1,
       events: [], // Lista de eventos do calendário
-      colors: ['pink', 'green', 'grey', 'cyan', 'blue', 'orange', 'red', 'purple','black'],
+      colors: ['pink', 'green', 'grey', 'cyan', 'blue', 'orange', 'red', 'purple', 'black'],
+      colorNames: {
+        'pink': 'Rosa',
+        'green': 'Verde',
+        'grey': 'Cinza',
+        'cyan': 'Ciano',
+        'blue': 'Azul',
+        'orange': 'Laranja',
+        'red': 'Vermelho',
+        'purple': 'Roxo',
+        'black': 'Preto'
+      },
       valid: true, // Validação dos formulários
       carregando: false, // Estado de carregamento
       isLoading: false // Estado de carregamento para Firestore
     };
   },
+
+  computed: {
+    translatedColors() {
+      return this.colors.map(color => {
+        return {
+          text: this.colorNames[color],
+          value: color
+        };
+      });
+    }
+  },
+
 
   methods: {
     updateEventTitleWithTime() {
@@ -222,6 +289,13 @@ export default {
     pegarEventoCor(event) {
       return event.corEvento;
     },
+
+
+
+
+    // falta start
+    // cor em ptbr menos no firestore
+
 
     async addEvent({ date }) {
       this.novoEvento = {
@@ -252,7 +326,7 @@ export default {
           EmailUsuario: email // Atribui o email como EmailUsuario
         };
 
-        const docRef = await addDoc(collection(db, 'events'), event);
+        const docRef = await addDoc(collection(db, 'eventos'), event);
         event.id = docRef.id;
         this.events.push(event);
         this.adicionarEventoDialogo = false;
@@ -289,7 +363,7 @@ export default {
           this.events.splice(index, 1, { ...updatedEvent, id: this.editarEvento.id });
         }
 
-        const eventDoc = doc(db, 'events', this.editarEvento.id);
+        const eventDoc = doc(db, 'eventos', this.editarEvento.id);
         await updateDoc(eventDoc, updatedEvent);
 
         this.editarEventoDialogo = false;
@@ -320,7 +394,7 @@ export default {
       this.carregando = true;
       try {
         const deletedEvent = this.editarEvento;
-        await deleteDoc(doc(db, 'events', deletedEvent.id));
+        await deleteDoc(doc(db, 'eventos', deletedEvent.id));
         this.events = this.events.filter(event => event.id !== deletedEvent.id);
         this.deletarEventoDialogo = false;
         this.editarEventoDialogo = false;
@@ -341,7 +415,7 @@ export default {
         const email = user ? user.email : null;
 
         if (email) {
-          const q = query(collection(db, 'events'), where('EmailUsuario', '==', email));
+          const q = query(collection(db, 'eventos'), where('EmailUsuario', '==', email));
           const querySnapshot = await getDocs(q);
 
           this.events = querySnapshot.docs.map(doc => {

@@ -39,6 +39,7 @@
               Cadastrar
             </v-btn>
             <a href="#" @click.prevent="navegarParaRedefinirSenha" class="forgot-password-link">
+              <v-icon></v-icon>
               Esqueceu a Senha?
             </a>
           </v-form>
@@ -91,6 +92,13 @@ const navegarParaRedefinirSenha = () => {
   router.push("/RedefinirSenha");
 };
 
+// Adiciona uma variável de estado para controlar se o usuário está autenticado
+const isAuthenticated = ref(false);
+
+// Observa o estado de autenticação do usuário
+auth.onAuthStateChanged(user => {
+  isAuthenticated.value = !!user;
+});
 </script>
 
 <style scoped>
@@ -191,4 +199,8 @@ h2 {
   cursor: pointer;
 }
 
+/* Estilo para ocultar o ícone de configurações se o usuário não estiver autenticado */
+#iconeConfiguracoes {
+  display: none;
+}
 </style>
