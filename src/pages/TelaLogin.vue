@@ -1,45 +1,26 @@
 <template>
-  <v-container fluid fill-height class="container-bg">
+  <v-container fluid fill-height class="containerGeral">
     <div class="login-wrapper">
-      <div class="login-container">
+      <div class="containerLogin">
         <div class="login-image">
           <img src="@/assets/imagemLogin.jpg" alt="Imagem de Login">
         </div>
-        <div class="login-form">
+        <div class="FormLogin">
           <h2>Login</h2>
           <v-form @submit.prevent="login">
-            <div class="input-group">
-              <v-text-field
-                v-model="email"
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Email"
-                required
-                hide-details
-                solo
-              ></v-text-field>
+            <div class="inputLogin">
+              <v-text-field v-model="email" id="email" name="email" type="email" placeholder="Email" required hide-details solo></v-text-field>
             </div>
-            <div class="input-group">
-              <v-text-field
-                v-model="password"
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Senha"
-                required
-                hide-details
-                solo
-              ></v-text-field>
+            <div class="inputLogin">
+              <v-text-field v-model="password" id="password" name="password" type="password" placeholder="Senha" required hide-details solo></v-text-field>
             </div>
-            <v-btn type="submit" color="success" class="login-button">
+            <v-btn type="submit" color="success" class="botaoLogin">
               Entrar
             </v-btn>
-            <v-btn color="primary" @click="registrarUsuario" class="register-button">
+            <v-btn color="primary" @click="registrarUsuario" class="botaoRegistrar">
               Cadastrar
             </v-btn>
-            <a href="#" @click.prevent="navegarParaRedefinirSenha" class="forgot-password-link">
-              <v-icon></v-icon>
+            <a href="#" @click.prevent="navegarParaRedefinirSenha" class="irParaRedefinirSenha">
               Esqueceu a Senha?
             </a>
           </v-form>
@@ -81,7 +62,6 @@ const registrarUsuario = async () => {
 const login = async () => {
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value);
-    alert("Login realizado com sucesso!");
     router.push("/Calendario");
   } catch (error) {
     alert("Email e senha inválidos. Tente novamente!");
@@ -109,25 +89,21 @@ auth.onAuthStateChanged(user => {
   font-family: Arial, sans-serif;
 }
 
-.container-bg {
+.containerGeral {
   background-color: #e5e1e1;
-  display: flex;
-  justify-content: center;
 }
 
 .login-wrapper {
   width: 100%;
   max-width: 900px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 156px; 
+  margin-bottom: 156px;
 }
 
-.login-container {
+.containerLogin {
   display: flex;
 }
 
@@ -141,10 +117,10 @@ auth.onAuthStateChanged(user => {
   object-fit: cover;
 }
 
-.login-form {
+.FormLogin {
   flex: 1;
   padding: 40px;
-  background-color: #0056b3; 
+  background-color: #0056b3;
 }
 
 h2 {
@@ -154,15 +130,15 @@ h2 {
   font-size: 2em;
 }
 
-.input-group {
+.inputLogin {
   margin-bottom: 15px;
   text-align: left;
 }
 
-.login-button {
+.botaoLogin {
   width: 42%;
   padding: 10px;
-  margin: 25px 15px ;
+  margin: 25px 15px;
   border: none;
   border-radius: 4px;
   background-color: #28a745;
@@ -171,11 +147,11 @@ h2 {
   cursor: pointer;
 }
 
-.login-button:hover {
+.botaoLogin:hover {
   background-color: #218838;
 }
 
-.register-button {
+.botaoRegistrar {
   width: 42%;
   padding: 10px;
   margin: 25px 15px;
@@ -187,20 +163,15 @@ h2 {
   cursor: pointer;
 }
 
-.register-button:hover {
+.botaoRegistrar:hover {
   background-color: #0056b3;
 }
 
-.forgot-password-link {
+.irParaRedefinirSenha {
   display: block;
   margin: 10px 0;
   color: white;
   text-align: center;
   cursor: pointer;
-}
-
-/* Estilo para ocultar o ícone de configurações se o usuário não estiver autenticado */
-#iconeConfiguracoes {
-  display: none;
 }
 </style>

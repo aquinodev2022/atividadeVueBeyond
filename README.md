@@ -1,14 +1,19 @@
 # beyond-app
 
-## Calendário Vue.js com Adição e Edição de Eventos 📅
+## Calendário Vue.js de Eventos 📅
 
-Este é um projeto de exemplo de um aplicativo de calendário desenvolvido utilizando Vue.js e Vuetify, uma biblioteca de componentes Vue.js com base no Material Design.
+Este é um projeto de exemplo de um aplicativo de calendário desenvolvido utilizando Vue.js, Vuetify, firebase e firestore, nele é possível realizar CRUD e ter uma conta própria.
 
 ### Funcionalidades Principais:
 - Visualização do Calendário: O aplicativo permite visualizar o calendário em diferentes modos: dia, semana, mês.
 - Adição de Eventos: Os usuários podem adicionar novos eventos ao calendário. Eles podem definir o título, a cor e a hora do evento.
 - Edição de Eventos: Os eventos existentes podem ser editados. Os usuários podem alterar o título, a cor e a hora do evento.
 - Exclusão de Eventos: Os eventos existentes podem ser excluídos do calendário.
+- Criação de uma conta para armazenar os eventos.
+
+### Hospedagem:  
+
+- [Vercel](atividade-vue-beyond.vercel.app)
 
 ### Configuração e Uso:
 - Clone este repositório ou faça o donwload zip em seu ambiente de desenvolvimento.

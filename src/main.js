@@ -4,10 +4,11 @@ import App from "./App.vue";
 import vuetify from "./plugins/vuetify";
 import router from "./router/router.js";
 
-// Funções necessárias do Firebase
+// Funções necessárias do Firebase e firestore
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore';
+
 
 const firebaseConfiguracoes = {
   apiKey: "AIzaSyA0JtqLanq7L0xolbGHcyY7tFeq2-nRe7A",
@@ -22,9 +23,10 @@ const firebaseConfiguracoes = {
 const app = initializeApp(firebaseConfiguracoes);
 const db = getFirestore(app);
 
-export { db }; 
+// Exporta a instância do Firestore para ser utilizada em outros lugares da aplicação
+export { db };
 
-// Obtendo o objeto de autenticação do Firebase
+// obtem o serviço de autenticação do Firebase.
 export const auth = getAuth();
 
 new Vue({

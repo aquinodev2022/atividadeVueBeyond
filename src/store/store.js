@@ -55,6 +55,7 @@ export default new Vuex.Store({
       }
     },
 
+    // Sair da conta
     async logout({ commit }) {
       const auth = getAuth();
       await signOut(auth);

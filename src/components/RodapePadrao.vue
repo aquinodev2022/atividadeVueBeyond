@@ -1,18 +1,20 @@
 <template>
-  <v-footer dark padless class="footer">
+  <v-footer dark padless class="rodape">
     <v-card class="flex">
       <v-card-title class="blue darken-3 d-flex justify-center">
         <strong class="mr-8">Beyond Co.</strong>
 
-        <template v-for="icon in icons">
-          <a :href="getLink(icon)" :key="icon" class="mx-4" target="_blank">
+        <!-- Ícones do rodapé -->
+        <template v-for="icone in icones">
+          <a :href="pegarLink(icone)" :key="icone" class="mx-4" target="_blank">
             <v-btn dark icon>
-              <v-icon size="24px">{{ icon }}</v-icon>
+              <v-icon size="24px">{{ icone }}</v-icon>
             </v-btn>
           </a>
         </template>
       </v-card-title>
 
+      <!-- Ano atual — Calendário Beyond -->
       <v-card-text class="py-2 blue darken-3 text-center">
         {{ new Date().getFullYear() }} — <strong>Calendário Beyond</strong>
       </v-card-text>
@@ -23,7 +25,7 @@
 <script>
 export default {
   data: () => ({
-    icons: [
+    icones: [
       'mdi-github',
       'mdi-whatsapp',
       'mdi-linkedin',
@@ -37,15 +39,15 @@ export default {
     },
   }),
   methods: {
-    getLink(icon) {
-      return this.links[icon] || '#'; // Retorna o link correspondente ou '#' se não houver link definido
+    pegarLink(icone) {
+      return this.links[icone] || '#'; // Retorna o link correspondente
     }
   }
 }
 </script>
 
-<style>
-.footer {
+<style scoped>
+.rodape {
   position: fixed;
   bottom: 0;
   width: 100%;
