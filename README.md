@@ -13,7 +13,7 @@ Este é um projeto de exemplo de um aplicativo de calendário desenvolvido utili
 
 ### Hospedagem:  
 
-- [Vercel](atividade-vue-beyond.vercel.app)
+- [Vercel](https://atividade-vue-beyond.vercel.app)
 
 ### Configuração e Uso:
 - Clone este repositório ou faça o donwload zip em seu ambiente de desenvolvimento.
