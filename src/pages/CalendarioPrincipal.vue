@@ -1,5 +1,16 @@
 <template>
   <v-main class="light-blue darken-4" id="mainEstilo">
+    
+    <!-- Adiciona o v-snackbar para exibir mensagens -->
+    <v-snackbar id="popupMensagem" v-model="snackbar.show" :timeout="snackbar.timeout" :color="snackbar.color" top right>
+      <div class="snackbar-content">
+        <span id="mensagemPopup">{{ snackbar.message }}</span> 
+        <v-btn icon @click="fecharSnackbar" class="snackbar-close-btn">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+    </v-snackbar>
+
     <v-toolbar class="light-blue darken-4" flat id="toolbarSuperior">
 
       <!-- Menu com a opção "HOJE" e seleção de meses através das setas -->
@@ -40,6 +51,9 @@
           <v-card-title>Adicionar Evento</v-card-title>
           <v-card-text>
             <v-form ref="form">
+              <!-- Display the formatted date -->
+              <div id="dataEventoFormatada">{{ dataFormatada }}</div>
+
               <v-text-field v-model="novoEvento.nomeEvento" :rules="[v => !!v || 'Título do Evento é obrigatório']"
                 label="Nome do evento"></v-text-field>
               <v-select v-model="novoEvento.corEvento" :items="corEmPortugues"
@@ -53,14 +67,12 @@
               </div>
             </v-form>
           </v-card-text>
-
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn id="botaoCancelarCriarEvento" color="grey" @click="cancelarAdicionarEvento">
               <v-icon>mdi-cancel</v-icon>
               Cancelar
             </v-btn>
-
             <v-btn :disabled="carregando" :loading="carregando" color="primary" @click="adicionarEvento">
               <v-icon>mdi-plus</v-icon>
               Adicionar
@@ -80,10 +92,10 @@
 
               <div class="d-flex justify-space-between">
                 <v-select id="editarEventoohora" v-model="editarEventoohora" :items="hours" label="Hora"
-                  @change="updateEventTitleWithTime"></v-select>
+                  @change="atualizarHoraMinutoDoEvento"></v-select>
 
                 <v-select id="editarEventohora" v-model="editarEventohora" :items="minutes" label="Minutos"
-                  @change="updateEventTitleWithTime"></v-select>
+                  @change="atualizarHoraMinutoDoEvento"></v-select>
               </div>
 
               <v-select v-model="editarEvento.corEvento" :items="corEmPortugues"
@@ -152,6 +164,18 @@
   margin-right: 7px;
 }
 
+#popupMensagem {
+  margin-top: 70px;
+}
+
+#mensagemPopup {
+  margin-left: 30px;
+}
+
+.snackbar-close-btn {
+  margin-left: 22px;
+}
+
 #mesAnoAtual {
   color: white;
 }
@@ -165,9 +189,16 @@
   margin-top: 20px;
 }
 
+#dataEventoFormatada {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
 #relogioEstilo {
   width: 450px;
 }
+
 
 #fraseAntesDoRelogio {
   font-size: 18px;
@@ -229,8 +260,8 @@
 </style>
 
 <script>
-import { updateDoc, collection, addDoc, getDocs, where, query, doc, deleteDoc } from 'firebase/firestore';
-import { db, auth } from '../main';
+import { updateDoc, collection, addDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from '../config/firebase';
 
 export default {
 
@@ -240,6 +271,7 @@ export default {
       minutes: Array.from({ length: 60 }, (_, i) => `${i < 10 ? '0' : ''}${i}`), // Minutos do dia
       foco: '', // Data de foco do calendário, ou seja, nenhuma
       tituloCalendario: '',
+      dataFormatada: '',
       novoEvento: {
         nomeEvento: '',
         date: '',
@@ -269,7 +301,12 @@ export default {
         'purple': 'Roxo',
         'black': 'Preto'
       },
-
+      snackbar: {
+        show: false,
+        timeout: 3500, // Tempo em milissegundos que a snackbar será exibida
+        color: '', // Cor da snackbar (pode ser 'success', 'error', etc.)
+        message: '', // Mensagem a ser exibida na snackbar
+      },
     };
   },
 
@@ -307,11 +344,28 @@ export default {
       this.editarEvento.time = `${hour}:${minute}`;
     },
 
+exibirSnackbar(mensagem, cor) {
+      this.snackbar.message = mensagem;
+      this.snackbar.color = cor;
+      this.snackbar.show = true;
+    },
+
+    fecharSnackbar() {
+      this.snackbar.show = false;
+    },
+
+    // codigo ok
+
+
+
     pegarEventoCor(event) { // Retorna a cor do evento para exibição no calendário
       return event.corEvento;
     },
 
     async abrirPopUpAdicionarEventos({ date }) {
+      const data = new Date(date + 'T00:00:00');
+      const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      this.dataFormatada = data.toLocaleDateString('pt-BR', opcoes);
       this.novoEvento = {
         nomeEvento: '',
         date: date,
@@ -322,33 +376,36 @@ export default {
     },
 
     async adicionarEvento() {
-      if (!this.$refs.form.validate()) return; // // Valida o formulário
+  if (!this.$refs.form.validate()) return; // Valida o formulário
 
-      this.carregando = true;
+  this.carregando = true;
 
-      try {
-        const user = auth.currentUser;
-        const email = user ? user.email : null; // Obtém o email do usuário
-        const dataHoraLocal = new Date(this.novoEvento.date + 'T' + this.novoEvento.time);
+  try {
+    const user = auth.currentUser;
+    const email = user ? user.email : null; // Obtém o email do usuário
+    const dataHoraLocal = new Date(this.novoEvento.date + 'T' + this.novoEvento.time);
 
-        const event = { // contem os dados do novo evento.
-          nomeEvento: this.novoEvento.nomeEvento,
-          start: dataHoraLocal,
-          corEvento: this.novoEvento.corEvento,
-          EmailUsuario: email // 
-        };
+    const event = { // contem os dados do novo evento.
+      nomeEvento: this.novoEvento.nomeEvento,
+      start: dataHoraLocal,
+      corEvento: this.novoEvento.corEvento,
+      EmailUsuario: email // 
+    };
 
-        const documentoReferencia = await addDoc(collection(db, 'eventos'), event); // adiciona o novo evento à coleção eventos no Firestore
-        event.id = documentoReferencia.id;
-        this.events.push(event); // Adiciona o novo evento à lista de eventos
-        this.ordenarEventosPorHora(); // Ordena os eventos por hora
-        this.adicionarEventoDialogo = false;
-      } catch (e) {
-        alert("Erro ao adicionar o evento: ", e);
-      } finally {
-        this.carregando = false;
-      }
-    },
+    const documentoReferencia = await addDoc(collection(db, 'eventos'), event); // adiciona o novo evento à coleção eventos no Firestore
+    event.id = documentoReferencia.id;
+    this.events.push(event); // Adiciona o novo evento à lista de eventos
+    this.ordenarEventosPorHora(); // Ordena os eventos por hora
+    this.adicionarEventoDialogo = false;
+
+    this.exibirSnackbar('Evento adicionado com sucesso!', 'success');
+  } catch (e) {
+    this.exibirSnackbar(`Erro ao adicionar o evento: ${e.message}`, 'error');
+  } finally {
+    this.carregando = false;
+  }
+},
+
 
 
     abrirPopUpEditarEvento({ event }) {
@@ -360,36 +417,41 @@ export default {
     },
 
     async salvarEditarEvento() {
-      this.carregando = true;
-      try {
-        const atualizaEvento = { ...this.editarEvento };
-        const dataHoraLocal = new Date(atualizaEvento.start);
-        dataHoraLocal.setHours(parseInt(this.editarEventoohora));
-        dataHoraLocal.setMinutes(parseInt(this.editarEventohora));
-        atualizaEvento.start = dataHoraLocal; // Atualiza a data de início do evento para a hora e os minutos atualizados.
+  this.carregando = true;
+  try {
+    const atualizaEvento = { ...this.editarEvento };
+    const dataHoraLocal = new Date(atualizaEvento.start);
+    dataHoraLocal.setHours(parseInt(this.editarEventoohora));
+    dataHoraLocal.setMinutes(parseInt(this.editarEventohora));
+    atualizaEvento.start = dataHoraLocal; // Atualiza a data de início do evento para a hora e os minutos atualizados.
 
-        // Remove os campos id e time do objeto antes de enviar ao Firestore
-        delete atualizaEvento.id;
-        delete atualizaEvento.time;
+    // Remove os campos id e time do objeto antes de enviar ao Firestore
+    delete atualizaEvento.id;
+    delete atualizaEvento.time;
 
-        // Atualiza o evento na lista de eventos
-        const indice = this.events.findIndex(event => event.id === this.editarEvento.id);
-        if (indice !== -1) { // Verifica se o evento foi encontrado na lista 
-          this.events.splice(indice, 1, { ...atualizaEvento, id: this.editarEvento.id });
-          this.ordenarEventosPorHora(); // Ordena os eventos por hora
-        }
+    // Atualiza o evento na lista de eventos
+    const indice = this.events.findIndex(event => event.id === this.editarEvento.id);
+    if (indice !== -1) { // Verifica se o evento foi encontrado na lista 
+      this.events.splice(indice, 1, { ...atualizaEvento, id: this.editarEvento.id });
+      this.ordenarEventosPorHora(); // Ordena os eventos por hora
+    }
 
-        // Atualiza o evento no Firestore
-        const eventoDocumento = doc(db, 'eventos', this.editarEvento.id);
-        await updateDoc(eventoDocumento, atualizaEvento);
+    // Atualiza o evento no Firestore
+    const eventoDocumento = doc(db, 'eventos', this.editarEvento.id);
+    await updateDoc(eventoDocumento, atualizaEvento);
 
-        this.editarEventoDialogo = false;
-      } catch (e) {
-        alert("Erro ao editar o evento: ", e);
-      } finally {
-        this.carregando = false;
-      }
-    },
+    this.editarEventoDialogo = false;
+
+    // Exibe a snackbar com a mensagem de sucesso
+    this.exibirSnackbar('Evento editado com sucesso!', 'success');
+  } catch (e) {
+    console.error("Erro ao editar o evento: ", e);
+    // Exibe a snackbar com a mensagem de erro
+    this.exibirSnackbar('Erro ao editar o evento', 'error');
+  } finally {
+    this.carregando = false;
+  }
+},
 
 
     abrirDeletarDialogo() {
@@ -423,44 +485,43 @@ export default {
     },
 
     async confirmarDeletarEvento() {
-      this.carregando = true;
-      try {
-        const deletarEvento = this.editarEvento;
+  this.carregando = true;
+  try {
+    const deletarEvento = this.editarEvento;
 
-        // deleta o documento no Firestore
-        await deleteDoc(doc(db, 'eventos', deletarEvento.id));
-        // Atualiza a lista de eventos usando filtro para remover o evento que foi deletado
-        this.events = this.events.filter(event => event.id !== deletarEvento.id);
-        this.deletarEventoDialogo = false;
-        this.editarEventoDialogo = false;
-      } catch (e) {
-        alert("Erro ao deletar o evento: ", e);
-      } finally {
-        this.carregando = false;
-      }
-    },
+    // Deleta o documento no Firestore
+    await deleteDoc(doc(db, 'eventos', deletarEvento.id));
+    // Atualiza a lista de eventos usando filtro para remover o evento que foi deletado
+    this.events = this.events.filter(event => event.id !== deletarEvento.id);
+    this.deletarEventoDialogo = false;
+    this.editarEventoDialogo = false;
+
+    // Exibe a snackbar com a mensagem de sucesso
+    this.exibirSnackbar('Evento excluído com sucesso!', 'success');
+  } catch (e) {
+    console.error("Erro ao deletar o evento: ", e);
+    // Exibe a snackbar com a mensagem de erro
+    this.exibirSnackbar('Erro ao excluir o evento', 'error');
+  } finally {
+    this.carregando = false;
+  }
+},
 
     async buscarEventosFirestore() {
-      const user = auth.currentUser;
-      const email = user ? user.email : null; // obtém o email do usuário
+      // Busca todos os eventos na coleção 'eventos' do Firestore, sem filtrar por e-mail do usuário
+      const resultadoConsulta = await getDocs(collection(db, 'eventos'));
 
-      if (email) {
-        // Cria uma consulta para buscar eventos na coleção do firestore do usuário autenticado.
-        const consulta = query(collection(db, 'eventos'), where('EmailUsuario', '==', email));
-        const resultadoConsulta = await getDocs(consulta);
+      // Mapeia os documentos retornados para objetos de evento e atualiza a lista de eventos
+      this.events = resultadoConsulta.docs.map(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        data.start = data.start.toDate();
 
-        // Mapeia os documentos retornados para objetos de evento e atualiza a lista de eventos
-        this.events = resultadoConsulta.docs.map(doc => {
-          const data = doc.data();
-          data.id = doc.id;
-          data.start = data.start.toDate();
+        return data;
+      });
 
-          return data;
-        });
-
-        // Ordena os eventos por hora antes de atualizar a lista
-        this.ordenarEventosPorHora();
-      }
+      // Ordena os eventos por hora antes de atualizar a lista
+      this.ordenarEventosPorHora();
     },
 
     ordenarEventosPorHora() {
@@ -474,4 +535,5 @@ export default {
     }
   },
 };
+
 </script>
